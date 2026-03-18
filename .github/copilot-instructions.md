@@ -98,6 +98,7 @@
 - Pull latest `develop`
 
 Checkpoint A:
+
 - If there are unexpected local changes, stop and ask user for confirmation before continuing
 
 ### 2. Quality Checks
@@ -109,6 +110,7 @@ Checkpoint A:
 - Run frontend build: `npm run build --workspace=frontend`
 
 Checkpoint B:
+
 - If any check fails, stop
 - Report failing command, key error, and likely fix
 - Do not commit, push, or merge when checks are failing
@@ -122,6 +124,7 @@ Checkpoint B:
 - Stop dev servers and ensure ports `5173` and `3001` are released
 
 Checkpoint C:
+
 - Ask user to confirm smoke checks passed before continuing
 
 ### 4. Commit and Push Develop
