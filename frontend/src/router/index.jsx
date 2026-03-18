@@ -37,7 +37,7 @@ function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-tavern-amber text-xl animate-pulse">
-        Loading The Soggy Calf…
+        Loading Waterdeep: Dragon Heist…
       </div>
     </div>
   );
