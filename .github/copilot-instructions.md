@@ -85,6 +85,69 @@
 - Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`
 - PRs always target `develop`
 
+## SHIP Workflow
+
+- Trigger keyword: `SHIP`
+- Preferred single-command trigger in chat: `/ship`
+- Use this workflow whenever preparing to add, commit, push `develop`, and merge `develop` into `main`
+
+### 1. Preflight
+
+- Verify current branch is `develop`
+- Show `git status --short`
+- Pull latest `develop`
+
+Checkpoint A:
+
+- If there are unexpected local changes, stop and ask user for confirmation before continuing
+
+### 2. Quality Checks
+
+- Run backend lint: `npm run lint --workspace=backend`
+- Run frontend lint: `npm run lint --workspace=frontend`
+- Run backend tests: `npm test --workspace=backend`
+- Run frontend tests: `npm test --workspace=frontend`
+- Run frontend build: `npm run build --workspace=frontend`
+
+Checkpoint B:
+
+- If any check fails, stop
+- Report failing command, key error, and likely fix
+- Do not commit, push, or merge when checks are failing
+
+### 3. Runtime Smoke Checks
+
+- Start app from repo root: `npm run dev`
+- Verify frontend responds on `http://localhost:5173`
+- Verify backend responds on `http://localhost:3001`
+- Verify login page renders and auth username endpoint is reachable
+- Stop dev servers and ensure ports `5173` and `3001` are released
+
+Checkpoint C:
+
+- Ask user to confirm smoke checks passed before continuing
+
+### 4. Commit and Push Develop
+
+- Stage intended files (`git add`)
+- Create one conventional commit message based on actual diff
+- Push `develop` to `origin/develop`
+- Verify local `develop` is synchronized with remote
+
+### 5. Merge to Main
+
+- Require explicit user confirmation before merging to `main`
+- Pull latest `main` and latest `develop`
+- Merge `develop` into `main` only if all checks passed
+- Push `main`
+- Report final summary including commit hash and merge result
+
+### Safety Rules
+
+- Never bypass failed lint, test, build, or smoke checks
+- Never use destructive git commands unless explicitly requested
+- Never commit directly on `main` for feature work
+
 ## What to Avoid
 
 - No TypeScript — keep everything `.js` / `.jsx`

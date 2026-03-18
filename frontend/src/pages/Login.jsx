@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faDragon,
   faDeleteLeft,
   faCircleNotch,
+  faChevronDown,
   faKey,
+  faUserSecret,
   faShieldHalved,
   faTriangleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
@@ -13,6 +15,8 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { api } from "../services/api.js";
 
 const PIN_LENGTH = 4;
+const USERNAME_FETCH_MAX_ATTEMPTS = 20;
+const USERNAME_FETCH_RETRY_DELAY_MS = 1000;
 
 function PinPad({ pin, onDigit, onDelete }) {
   const digits = [
@@ -37,8 +41,8 @@ function PinPad({ pin, onDigit, onDelete }) {
           <div
             key={i}
             className="w-11 h-12 sm:w-12 sm:h-14 rounded-md flex items-center justify-center text-xl sm:text-2xl font-bold
-              border border-[color-mix(in_srgb,var(--color-tavern-amber)_50%,transparent)]
-              bg-[color-mix(in_srgb,var(--color-tavern-dark)_82%,black)] text-tavern-gold shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+              border border-[color-mix(in_srgb,var(--color-tavern-gold)_58%,rgba(84,138,255,0.45))]
+              bg-[linear-gradient(180deg,rgba(9,26,63,0.88)_0%,rgba(7,20,50,0.86)_100%)] text-tavern-gold shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
           >
             {pin[i] ? "●" : ""}
           </div>
@@ -54,9 +58,9 @@ function PinPad({ pin, onDigit, onDelete }) {
                 key={i}
                 type="button"
                 onClick={onDelete}
-                className="h-12 sm:h-14 rounded-lg border border-[color-mix(in_srgb,var(--color-tavern-amber)_35%,transparent)]
-                  bg-[color-mix(in_srgb,var(--color-tavern-brown)_80%,black)] text-tavern-amber
-                  hover:bg-[color-mix(in_srgb,var(--color-tavern-amber)_18%,var(--color-tavern-dark))]
+                className="h-12 sm:h-14 rounded-lg border border-[color-mix(in_srgb,var(--color-tavern-gold)_52%,rgba(84,138,255,0.45))]
+                  bg-[linear-gradient(180deg,rgba(10,30,74,0.9)_0%,rgba(7,20,52,0.88)_100%)] text-tavern-gold
+                  hover:bg-[linear-gradient(180deg,rgba(18,47,109,0.94)_0%,rgba(10,29,74,0.92)_100%)]
                   transition-colors flex items-center justify-center"
               >
                 <FontAwesomeIcon icon={faDeleteLeft} size="lg" />
@@ -69,10 +73,10 @@ function PinPad({ pin, onDigit, onDelete }) {
               type="button"
               onClick={() => onDigit(d)}
               disabled={pin.length >= PIN_LENGTH}
-              className="h-12 sm:h-14 rounded-lg border border-[color-mix(in_srgb,var(--color-tavern-amber)_35%,transparent)]
-                bg-[color-mix(in_srgb,var(--color-tavern-brown)_80%,black)] text-tavern-parchment text-lg sm:text-xl font-semibold
-                hover:bg-[color-mix(in_srgb,var(--color-tavern-amber)_18%,var(--color-tavern-dark))]
-                hover:border-[color-mix(in_srgb,var(--color-tavern-amber)_75%,transparent)]
+              className="h-12 sm:h-14 rounded-lg border border-[color-mix(in_srgb,var(--color-tavern-gold)_52%,rgba(84,138,255,0.45))]
+                bg-[linear-gradient(180deg,rgba(10,30,74,0.9)_0%,rgba(7,20,52,0.88)_100%)] text-tavern-parchment text-lg sm:text-xl font-semibold
+                hover:bg-[linear-gradient(180deg,rgba(18,47,109,0.94)_0%,rgba(10,29,74,0.92)_100%)]
+                hover:border-[color-mix(in_srgb,var(--color-tavern-gold)_78%,rgba(84,138,255,0.42))]
                 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {d}
@@ -92,19 +96,47 @@ export default function Login() {
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [usernameMenuOpen, setUsernameMenuOpen] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const usernameMenuRef = useRef(null);
+
+  const formatDisplayName = (name) =>
+    name === "dm" ? "Dungeon Master" : name;
 
   useEffect(() => {
     let active = true;
+    document.body.classList.add("login-scroll-lock");
+
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
     const loadUsernames = async () => {
       setUsernamesLoading(true);
       setUsernamesError("");
       try {
-        const data = await api.get("/auth/usernames", { skipAuth: true });
+        let data = null;
+
+        for (
+          let attempt = 1;
+          attempt <= USERNAME_FETCH_MAX_ATTEMPTS;
+          attempt += 1
+        ) {
+          try {
+            data = await api.get("/auth/usernames", { skipAuth: true });
+            break;
+          } catch (err) {
+            const isRetryable = !err.status || err.status >= 500;
+            if (!isRetryable || attempt === USERNAME_FETCH_MAX_ATTEMPTS) {
+              throw err;
+            }
+
+            await delay(USERNAME_FETCH_RETRY_DELAY_MS);
+            if (!active) return;
+          }
+        }
+
         if (!active) return;
-        setUsernames(Array.isArray(data.usernames) ? data.usernames : []);
+        setUsernames(Array.isArray(data?.usernames) ? data.usernames : []);
       } catch {
         if (!active) return;
         setUsernames([]);
@@ -117,6 +149,29 @@ export default function Login() {
     loadUsernames();
     return () => {
       active = false;
+      document.body.classList.remove("login-scroll-lock");
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!usernameMenuRef.current?.contains(event.target)) {
+        setUsernameMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") {
+        setUsernameMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, []);
 
@@ -125,6 +180,14 @@ export default function Login() {
   };
 
   const handleDelete = () => setPin((p) => p.slice(0, -1));
+
+  const usernameFieldDisabled = usernamesLoading || usernames.length === 0;
+
+  const usernameDisplayText = usernamesLoading
+    ? "Loading usernames..."
+    : username
+      ? formatDisplayName(username)
+      : "Select your username";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -159,28 +222,47 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-3 py-6 sm:px-4 sm:py-8 lg:px-8 login-scene">
+    <div className="relative h-dvh overflow-hidden p-3 sm:p-4 lg:p-6 login-scene">
       <div className="pointer-events-none absolute -top-28 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-[radial-gradient(circle,rgba(240,192,64,0.3)_0%,rgba(240,192,64,0)_72%)] login-lantern" />
       <div className="pointer-events-none absolute inset-0 opacity-35 login-fog" />
 
-      <div className="relative mx-auto flex w-full max-w-5xl items-center justify-center min-h-[calc(100svh-3rem)]">
-        <div className="grid w-full max-w-4xl overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-tavern-amber)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-tavern-brown)_82%,black)] shadow-[0_28px_70px_rgba(0,0,0,0.5)] login-panel lg:grid-cols-[1.05fr_1fr]">
-          <aside className="hidden lg:flex flex-col justify-between p-8 border-r border-[color-mix(in_srgb,var(--color-tavern-amber)_20%,transparent)] bg-[linear-gradient(180deg,color-mix(in_srgb,var(--color-tavern-dark)_88%,black)_0%,color-mix(in_srgb,var(--color-tavern-brown)_78%,black)_100%)]">
+      <div className="relative mx-auto flex h-full w-full max-w-5xl items-center justify-center">
+        <div className="grid w-full max-w-4xl overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--color-tavern-amber)_35%,transparent)] shadow-[0_28px_70px_rgba(0,0,0,0.5)] login-panel lg:grid-cols-[1.05fr_1fr]">
+          <aside className="hidden lg:flex flex-col justify-between p-8 border-r border-[color-mix(in_srgb,var(--color-tavern-amber)_20%,transparent)] login-panel-aside">
             <div>
               <p className="inline-flex items-center gap-2 rounded-full border border-[color-mix(in_srgb,var(--color-tavern-amber)_40%,transparent)] px-3 py-1 text-xs tracking-[0.12em] uppercase text-tavern-amber/90">
                 <FontAwesomeIcon icon={faShieldHalved} />
                 Secure Campfire Access
               </p>
-              <h1 className="mt-5 font-display text-4xl leading-tight text-tavern-gold">
-                The Soggy Calf
-              </h1>
-              <p className="mt-3 max-w-sm text-sm text-tavern-parchment/80">
-                Gather your party, check your quest log, and step into the next
-                chapter.
+              <div className="mt-5 login-campaign-lockup">
+                <img
+                  src="/images/waterdeep-gold.webp"
+                  alt="Waterdeep crest"
+                  className="login-campaign-seal"
+                />
+                <h1 className="login-campaign-main">
+                  Waterdeep
+                </h1>
+                <h2 className="login-campaign-sub">
+                  Dragon Heist
+                </h2>
+                <span className="login-campaign-divider" aria-hidden="true" />
+              </div>
+              <p className="mt-3 max-w-sm text-sm leading-relaxed text-tavern-parchment/85">
+                In the City of Splendors, the high-arcanists have vanished,
+                magic is fracturing, and a shadow of martial law has fallen
+                over the streets. Under the iron grip of Open Lord Calloway and
+                his ruthless Inquisition, the Great Game for a hidden cache of
+                500,000 gold dragons has turned from a whispered rumor into a
+                desperate race for survival. As a crew of specialists operating
+                in a city pushed to the breaking point, you must navigate
+                warring criminal syndicates and a crumbling social order to pull
+                off the ultimate heist-before the city's new masters, or the
+                monsters in the dark, find the vault first.
               </p>
             </div>
 
-            <div className="rounded-xl border border-[color-mix(in_srgb,var(--color-tavern-amber)_24%,transparent)] bg-[color-mix(in_srgb,var(--color-tavern-dark)_75%,black)] px-4 py-3 text-sm text-tavern-parchment/80">
+            <div className="rounded-xl border border-[color-mix(in_srgb,var(--color-tavern-gold)_42%,rgba(84,138,255,0.4))] bg-[linear-gradient(165deg,rgba(8,24,60,0.75)_0%,rgba(5,16,40,0.7)_100%)] px-4 py-3 text-sm text-tavern-parchment/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
               <p className="font-semibold text-tavern-gold">Adventurer Tip</p>
               <p className="mt-1">
                 Newly created accounts must change PIN on first entry.
@@ -197,42 +279,72 @@ export default function Login() {
               <h2 className="font-display text-2xl sm:text-3xl font-bold text-tavern-gold">
                 Welcome Back
               </h2>
-              <p className="text-tavern-muted text-sm mt-1">
-                Sign in with your name and 4-digit PIN.
+              <p className="text-tavern-parchment/90 text-sm mt-1">
+                Sign in with your character and 4-digit PIN.
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label
-                  className="block text-sm text-tavern-muted mb-1"
-                  htmlFor="username"
+                  className="block text-sm text-tavern-parchment/90 mb-1"
+                  htmlFor="username-trigger"
                 >
-                  Name / Username
+                  Character selection
                 </label>
-                <div className="relative">
+                <div className="relative" ref={usernameMenuRef}>
                   <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-tavern-muted">
-                    <FontAwesomeIcon icon={faKey} />
+                    <FontAwesomeIcon
+                      icon={username === "dm" ? faUserSecret : faKey}
+                    />
                   </span>
-                  <select
-                    id="username"
+                  <button
+                    id="username-trigger"
+                    type="button"
                     autoFocus
-                    className="input-field pl-10"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    disabled={usernamesLoading || usernames.length === 0}
+                    className="login-select w-full pl-10 pr-10 text-left"
+                    onClick={() => {
+                      if (!usernameFieldDisabled) {
+                        setUsernameMenuOpen((open) => !open);
+                      }
+                    }}
+                    disabled={usernameFieldDisabled}
+                    aria-haspopup="listbox"
+                    aria-expanded={usernameMenuOpen}
+                    aria-controls="username-listbox"
                   >
-                    <option value="">
-                      {usernamesLoading
-                        ? "Loading usernames..."
-                        : "Select your username"}
-                    </option>
-                    {usernames.map((name) => (
-                      <option key={name} value={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
+                    {usernameDisplayText}
+                  </button>
+                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-tavern-gold/90">
+                    <FontAwesomeIcon icon={faChevronDown} />
+                  </span>
+
+                  {usernameMenuOpen && !usernameFieldDisabled && (
+                    <ul
+                      id="username-listbox"
+                      role="listbox"
+                      className="login-select-menu"
+                    >
+                      {usernames.map((name) => (
+                        <li key={name}>
+                          <button
+                            type="button"
+                            className="login-select-option"
+                            onClick={() => {
+                              setUsername(name);
+                              setUsernameMenuOpen(false);
+                            }}
+                          >
+                            <FontAwesomeIcon
+                              icon={name === "dm" ? faUserSecret : faKey}
+                              className="text-tavern-gold/90"
+                            />
+                            <span>{formatDisplayName(name)}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 {usernamesError && (
                   <p
@@ -246,7 +358,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-sm text-tavern-muted mb-2">
+                <label className="block text-sm text-tavern-parchment/90 mb-2">
                   4-Digit PIN
                 </label>
                 <PinPad
@@ -270,10 +382,10 @@ export default function Login() {
                   !username.trim() ||
                   pin.length !== PIN_LENGTH
                 }
-                className="btn-primary w-full flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2 rounded-md min-h-11 font-semibold text-[var(--color-tavern-dark)] bg-[linear-gradient(180deg,var(--color-tavern-gold)_0%,var(--color-tavern-amber)_100%)] shadow-[0_10px_24px_rgba(4,12,32,0.45)] transition-all hover:brightness-105 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               >
                 {loading && <FontAwesomeIcon icon={faCircleNotch} spin />}
-                Enter the Tavern
+                Enter the Yawning Portal
               </button>
             </form>
           </div>

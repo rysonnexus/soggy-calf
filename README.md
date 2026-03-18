@@ -1,4 +1,4 @@
-# The Soggy Calf — DnD Campaign App
+# Waterdeep: Dragon Heist — DnD Campaign App
 
 ## Stack
 

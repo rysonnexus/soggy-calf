@@ -15,7 +15,7 @@ export default function PlayerDashboard() {
             Welcome back, {user?.username}!
           </h2>
           <p className="text-tavern-muted text-sm">
-            You have entered The Soggy Calf. Your adventure awaits.
+            You have entered Waterdeep: Dragon Heist. Your adventure awaits.
           </p>
         </div>
 

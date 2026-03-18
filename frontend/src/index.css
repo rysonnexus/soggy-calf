@@ -24,6 +24,11 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
   }
+
+  .login-scroll-lock {
+    overflow: hidden;
+    height: 100dvh;
+  }
 }
 
 @layer components {
@@ -136,18 +141,11 @@
   }
 
   .login-scene {
-    background:
-      radial-gradient(
-        circle at 20% 16%,
-        color-mix(in srgb, var(--color-tavern-amber) 16%, transparent) 0%,
-        transparent 34%
-      ),
-      radial-gradient(
-        circle at 82% 78%,
-        color-mix(in srgb, var(--color-tavern-gold) 11%, transparent) 0%,
-        transparent 36%
-      ),
-      linear-gradient(165deg, #120d06 0%, #1a1208 42%, #24170b 100%);
+    background-image: url("/images/waterdeep.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: #120d06;
   }
 
   .login-fog {
@@ -170,7 +168,163 @@
   }
 
   .login-panel {
+    background: linear-gradient(
+      150deg,
+      rgba(6, 18, 48, 0.72) 0%,
+      rgba(7, 22, 58, 0.62) 52%,
+      rgba(4, 13, 36, 0.72) 100%
+    );
+    backdrop-filter: blur(6px) saturate(120%);
+    -webkit-backdrop-filter: blur(6px) saturate(120%);
     animation: panelRise 460ms ease-out both;
+  }
+
+  .login-panel-aside {
+    background: linear-gradient(
+      180deg,
+      rgba(4, 12, 32, 0.64) 0%,
+      rgba(5, 16, 40, 0.5) 100%
+    );
+  }
+
+  .login-campaign-lockup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.3rem;
+  }
+
+  .login-campaign-seal {
+    width: 10rem;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.45));
+    margin-bottom: 0.15rem;
+    transform-style: preserve-3d;
+    transform-origin: center;
+    animation: coinSpin 6.5s linear infinite;
+    will-change: transform;
+  }
+
+  .login-campaign-main {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.35rem, 3.8vw, 3rem);
+    line-height: 1;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #f5d78f;
+    text-shadow:
+      0 1px 0 rgba(255, 233, 175, 0.6),
+      0 6px 22px rgba(0, 0, 0, 0.5);
+  }
+
+  .login-campaign-sub {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.45rem, 2.4vw, 1.9rem);
+    line-height: 1.1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-tavern-gold) 75%, #fff4d0);
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+  }
+
+  .login-campaign-divider {
+    width: 10.25rem;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      rgba(240, 192, 64, 0) 0%,
+      rgba(240, 192, 64, 0.95) 50%,
+      rgba(240, 192, 64, 0) 100%
+    );
+    box-shadow: 0 0 12px rgba(240, 192, 64, 0.35);
+    margin-top: 0.35rem;
+  }
+
+  .login-select {
+    border: 1px solid
+      color-mix(in srgb, var(--color-tavern-gold) 45%, rgba(84, 138, 255, 0.45));
+    background: linear-gradient(
+      180deg,
+      rgba(9, 26, 63, 0.86) 0%,
+      rgba(7, 20, 50, 0.82) 100%
+    );
+    color: var(--color-tavern-parchment);
+    border-radius: 0.375rem;
+    padding-right: 0.75rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    width: 100%;
+    font-size: 16px;
+    min-height: 2.75rem;
+  }
+
+  .login-select:focus {
+    outline: none;
+    border-color: color-mix(
+      in srgb,
+      var(--color-tavern-gold) 80%,
+      rgba(84, 138, 255, 0.5)
+    );
+    box-shadow: 0 0 0 1px
+      color-mix(in srgb, var(--color-tavern-gold) 72%, rgba(84, 138, 255, 0.42));
+  }
+
+  .login-select option {
+    background-color: #071432;
+    color: var(--color-tavern-parchment);
+  }
+
+  .login-select:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  .login-select-menu {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0.35rem;
+    list-style: none;
+    border-radius: 0.5rem;
+    border: 1px solid
+      color-mix(in srgb, var(--color-tavern-gold) 45%, rgba(84, 138, 255, 0.45));
+    background: linear-gradient(
+      180deg,
+      rgba(8, 24, 60, 0.98) 0%,
+      rgba(6, 17, 44, 0.98) 100%
+    );
+    box-shadow: 0 16px 28px rgba(4, 12, 32, 0.52);
+    z-index: 20;
+  }
+
+  .login-select-option {
+    width: 100%;
+    border: 0;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: var(--color-tavern-parchment);
+    min-height: 2.5rem;
+    padding: 0.5rem 0.625rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .login-select-option:hover,
+  .login-select-option:focus-visible {
+    background: color-mix(in srgb, var(--color-tavern-gold) 16%, rgba(84, 138, 255, 0.32));
+    outline: none;
   }
 }
 
@@ -203,6 +357,18 @@
   100% {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes coinSpin {
+  0% {
+    transform: perspective(760px) rotateY(0deg) rotateZ(-1.2deg);
+  }
+  50% {
+    transform: perspective(760px) rotateY(180deg) rotateZ(1.2deg);
+  }
+  100% {
+    transform: perspective(760px) rotateY(360deg) rotateZ(-1.2deg);
   }
 }
 

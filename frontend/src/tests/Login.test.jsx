@@ -51,14 +51,14 @@ describe("Login page", () => {
         skipAuth: true,
       }),
     );
-    expect(screen.getByLabelText(/name \/ username/i)).toBeTruthy();
-    expect(screen.getByText(/enter the tavern/i)).toBeTruthy();
+    expect(screen.getByLabelText(/character selection/i)).toBeTruthy();
+    expect(screen.getByText(/enter the yawning portal/i)).toBeTruthy();
   });
 
   it("submit button is disabled without username and full PIN", async () => {
     renderLogin();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
-    const btn = screen.getByText(/enter the tavern/i);
+    const btn = screen.getByText(/enter the yawning portal/i);
     expect(btn.closest("button").disabled).toBe(true);
   });
 
@@ -68,14 +68,13 @@ describe("Login page", () => {
 
     renderLogin();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
-    fireEvent.change(screen.getByLabelText(/name \/ username/i), {
-      target: { value: "dm" },
-    });
+    fireEvent.click(screen.getByLabelText(/character selection/i));
+    fireEvent.click(screen.getByText(/dungeon master/i));
 
     // Click PIN digits 1, 2, 3, 4
     ["1", "2", "3", "4"].forEach((d) => fireEvent.click(screen.getByText(d)));
 
-    fireEvent.click(screen.getByText(/enter the tavern/i));
+    fireEvent.click(screen.getByText(/enter the yawning portal/i));
     await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
     expect(screen.getByRole("alert").textContent).toMatch(/incorrect/i);
   });
@@ -86,11 +85,10 @@ describe("Login page", () => {
 
     renderLogin();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
-    fireEvent.change(screen.getByLabelText(/name \/ username/i), {
-      target: { value: "dm" },
-    });
+    fireEvent.click(screen.getByLabelText(/character selection/i));
+    fireEvent.click(screen.getByText(/dungeon master/i));
     ["1", "2", "3", "4"].forEach((d) => fireEvent.click(screen.getByText(d)));
-    fireEvent.click(screen.getByText(/enter the tavern/i));
+    fireEvent.click(screen.getByText(/enter the yawning portal/i));
     await waitFor(() => expect(screen.getByRole("alert")).toBeTruthy());
     expect(screen.getByRole("alert").textContent).toMatch(/locked/i);
   });
@@ -99,11 +97,10 @@ describe("Login page", () => {
     mockLogin.mockResolvedValueOnce({ role: "DM", mustChangePIN: false });
     renderLogin();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
-    fireEvent.change(screen.getByLabelText(/name \/ username/i), {
-      target: { value: "dm" },
-    });
+    fireEvent.click(screen.getByLabelText(/character selection/i));
+    fireEvent.click(screen.getByText(/dungeon master/i));
     ["1", "2", "3", "4"].forEach((d) => fireEvent.click(screen.getByText(d)));
-    fireEvent.click(screen.getByText(/enter the tavern/i));
+    fireEvent.click(screen.getByText(/enter the yawning portal/i));
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith("/admin", { replace: true }),
     );
@@ -113,11 +110,10 @@ describe("Login page", () => {
     mockLogin.mockResolvedValueOnce({ role: "PLAYER", mustChangePIN: false });
     renderLogin();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
-    fireEvent.change(screen.getByLabelText(/name \/ username/i), {
-      target: { value: "player1" },
-    });
+    fireEvent.click(screen.getByLabelText(/character selection/i));
+    fireEvent.click(screen.getByText(/player1/i));
     ["1", "2", "3", "4"].forEach((d) => fireEvent.click(screen.getByText(d)));
-    fireEvent.click(screen.getByText(/enter the tavern/i));
+    fireEvent.click(screen.getByText(/enter the yawning portal/i));
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard", {
         replace: true,
@@ -129,11 +125,10 @@ describe("Login page", () => {
     mockLogin.mockResolvedValueOnce({ role: "DM", mustChangePIN: true });
     renderLogin();
     await waitFor(() => expect(api.get).toHaveBeenCalled());
-    fireEvent.change(screen.getByLabelText(/name \/ username/i), {
-      target: { value: "dm" },
-    });
+    fireEvent.click(screen.getByLabelText(/character selection/i));
+    fireEvent.click(screen.getByText(/dungeon master/i));
     ["1", "2", "3", "4"].forEach((d) => fireEvent.click(screen.getByText(d)));
-    fireEvent.click(screen.getByText(/enter the tavern/i));
+    fireEvent.click(screen.getByText(/enter the yawning portal/i));
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith("/change-pin", {
         replace: true,
