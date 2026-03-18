@@ -187,6 +187,17 @@ async function changePIN(userId, newPin) {
   });
 }
 
+// ── Username list for login selector ───────────────────────────────────────
+
+async function getLoginUsernames() {
+  const users = await prisma.user.findMany({
+    select: { username: true },
+    orderBy: { username: "asc" },
+  });
+
+  return users.map((u) => u.username);
+}
+
 module.exports = {
   hashPIN,
   loginWithPIN,
@@ -194,5 +205,6 @@ module.exports = {
   rotateRefreshToken,
   revokeRefreshToken,
   changePIN,
+  getLoginUsernames,
   prisma,
 };

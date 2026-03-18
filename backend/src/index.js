@@ -39,11 +39,21 @@ app.use(
 );
 
 // ── Routes ──
+app.get("/", (_req, res) =>
+  res.json({
+    status: "ok",
+    app: "The Soggy Calf API",
+    docs: ["/health", "/auth/*", "/admin/*", "/api/auth/*", "/api/admin/*"],
+  }),
+);
 app.get("/health", (_req, res) =>
   res.json({ status: "ok", app: "The Soggy Calf" }),
 );
 app.use("/auth", authRoutes);
 app.use("/admin", adminRoutes);
+// Support both direct backend calls (/auth, /admin) and proxied calls (/api/*)
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 // ── 404 ──
 app.use((_req, res) => res.status(404).json({ message: "Not found" }));

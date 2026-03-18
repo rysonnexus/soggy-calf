@@ -83,6 +83,7 @@ jest.mock("../services/authService", () => ({
   rotateRefreshToken: jest.fn(),
   revokeRefreshToken: jest.fn(),
   changePIN: jest.fn(),
+  getLoginUsernames: jest.fn(),
 }));
 
 const authService = require("../services/authService");
@@ -145,6 +146,11 @@ beforeEach(() => {
   });
 
   authService.changePIN.mockResolvedValue(undefined);
+  authService.getLoginUsernames.mockResolvedValue(
+    Object.values(mockUsers)
+      .map((u) => u.username)
+      .sort(),
+  );
   authService.prisma.user.findMany.mockResolvedValue([]);
   authService.prisma.user.create.mockResolvedValue({
     id: 99,
@@ -159,6 +165,15 @@ beforeEach(() => {
 async function loginAs(username, pin) {
   return request(app).post("/auth/login").send({ username, pin });
 }
+
+describe("GET /auth/usernames", () => {
+  it("returns all usernames for login selection", async () => {
+    const res = await request(app).get("/auth/usernames");
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body.usernames)).toBe(true);
+    expect(res.body.usernames).toEqual(["dm", "locked", "player1"]);
+  });
+});
 
 describe("POST /auth/login", () => {
   it("returns 400 when body is empty", async () => {

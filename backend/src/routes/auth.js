@@ -5,10 +5,21 @@ const {
   rotateRefreshToken,
   revokeRefreshToken,
   changePIN,
+  getLoginUsernames,
 } = require("../services/authService");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
+
+// GET /auth/usernames
+router.get("/usernames", async (_req, res, next) => {
+  try {
+    const usernames = await getLoginUsernames();
+    res.json({ usernames });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // Tighter rate limit for login endpoint (5 attempts / 15 min per IP)
 const loginLimiter = rateLimit({

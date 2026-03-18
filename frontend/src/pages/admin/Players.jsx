@@ -8,11 +8,10 @@ import {
   faKey,
   faTrash,
   faCircleNotch,
-  faShield,
 } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api.js";
+import AdminShell from "./AdminShell.jsx";
 
 const PIN_LENGTH = 4;
 
@@ -86,7 +85,7 @@ function CreatePlayerModal({ onClose, onCreated, accessToken }) {
               {Array.from({ length: PIN_LENGTH }).map((_, i) => (
                 <div
                   key={i}
-                  className="w-10 h-12 border-2 rounded flex items-center justify-center text-xl font-bold border-tavern-amber/40 bg-tavern-dark text-tavern-gold"
+                  className="w-9 h-11 sm:w-10 sm:h-12 border-2 rounded flex items-center justify-center text-lg sm:text-xl font-bold border-tavern-amber/40 bg-tavern-dark text-tavern-gold"
                 >
                   {pin[i] ? "●" : ""}
                 </div>
@@ -101,7 +100,7 @@ function CreatePlayerModal({ onClose, onCreated, accessToken }) {
                       key={i}
                       type="button"
                       onClick={() => setPin((p) => p.slice(0, -1))}
-                      className="h-12 rounded bg-tavern-dark border border-tavern-amber/30 text-tavern-amber hover:bg-tavern-amber/20 transition-colors flex items-center justify-center"
+                      className="h-11 sm:h-12 rounded bg-tavern-dark border border-tavern-amber/30 text-tavern-amber hover:bg-tavern-amber/20 transition-colors flex items-center justify-center"
                     >
                       ⌫
                     </button>
@@ -115,7 +114,7 @@ function CreatePlayerModal({ onClose, onCreated, accessToken }) {
                       setPin((p) => (p.length < PIN_LENGTH ? p + d : p))
                     }
                     disabled={pin.length >= PIN_LENGTH}
-                    className="h-12 rounded bg-tavern-dark border border-tavern-amber/30 text-tavern-parchment text-lg font-semibold hover:bg-tavern-amber/20 transition-colors disabled:opacity-40"
+                    className="h-11 sm:h-12 rounded bg-tavern-dark border border-tavern-amber/30 text-tavern-parchment text-base sm:text-lg font-semibold hover:bg-tavern-amber/20 transition-colors disabled:opacity-40"
                   >
                     {d}
                   </button>
@@ -131,7 +130,7 @@ function CreatePlayerModal({ onClose, onCreated, accessToken }) {
               {error}
             </p>
           )}
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               type="button"
               onClick={onClose}
@@ -157,8 +156,7 @@ function CreatePlayerModal({ onClose, onCreated, accessToken }) {
 }
 
 export default function AdminPlayers() {
-  const { user, accessToken, logout } = useAuth();
-  const navigate = useNavigate();
+  const { accessToken } = useAuth();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -237,40 +235,9 @@ export default function AdminPlayers() {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <FontAwesomeIcon
-            icon={faShield}
-            className="text-tavern-amber text-2xl"
-          />
-          <div>
-            <h1 className="font-display text-xl font-bold text-tavern-gold">
-              Dungeon Master Panel
-            </h1>
-            <p className="text-tavern-muted text-sm">The Soggy Calf</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-tavern-muted text-sm hidden sm:inline">
-            Welcome, {user?.username}
-          </span>
-          <button
-            onClick={() => navigate("/change-pin")}
-            className="btn-secondary text-sm py-1 px-3"
-          >
-            <FontAwesomeIcon icon={faKey} className="mr-1" /> PIN
-          </button>
-          <button onClick={logout} className="btn-secondary text-sm py-1 px-3">
-            Leave
-          </button>
-        </div>
-      </div>
-
-      {/* Players section */}
+    <AdminShell title="Adventurers">
       <div className="card">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
           <h2 className="font-display font-bold text-tavern-gold text-lg">
             <FontAwesomeIcon
               icon={faDragon}
@@ -280,7 +247,7 @@ export default function AdminPlayers() {
           </h2>
           <button
             onClick={() => setShowModal(true)}
-            className="btn-primary text-sm py-1.5 px-4 flex items-center gap-1"
+            className="btn-primary text-sm py-1.5 px-4 flex items-center justify-center gap-1 w-full sm:w-auto"
           >
             <FontAwesomeIcon icon={faPlus} /> Add
           </button>
@@ -296,74 +263,129 @@ export default function AdminPlayers() {
             No adventurers yet. Add the first one!
           </p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-tavern-amber/20 text-tavern-muted text-left">
-                  <th className="pb-2 pr-4">Username</th>
-                  <th className="pb-2 pr-4">Status</th>
-                  <th className="pb-2 pr-4">Failed Attempts</th>
-                  <th className="pb-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {players.map((p) => (
-                  <tr
-                    key={p.id}
-                    className="border-b border-tavern-amber/10 hover:bg-tavern-amber/5"
-                  >
-                    <td className="py-2 pr-4 font-medium text-tavern-parchment">
-                      {p.username}
-                    </td>
-                    <td className="py-2 pr-4">
-                      {p.isLocked ? (
-                        <span className="text-red-400 flex items-center gap-1">
-                          <FontAwesomeIcon icon={faLock} /> Locked
-                        </span>
-                      ) : (
-                        <span className="text-green-400 flex items-center gap-1">
-                          <FontAwesomeIcon icon={faLockOpen} /> Active
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-2 pr-4 text-tavern-muted">
-                      {p.failedAttempts}
-                    </td>
-                    <td className="py-2">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleToggleLock(p)}
-                          disabled={actionLoading === p.id}
-                          title={p.isLocked ? "Unlock" : "Lock"}
-                          className="text-tavern-amber hover:text-tavern-gold transition-colors disabled:opacity-40"
-                        >
-                          <FontAwesomeIcon
-                            icon={p.isLocked ? faLockOpen : faLock}
-                          />
-                        </button>
-                        <button
-                          onClick={() => handleResetPIN(p)}
-                          disabled={actionLoading === p.id}
-                          title="Reset PIN"
-                          className="text-tavern-amber hover:text-tavern-gold transition-colors disabled:opacity-40"
-                        >
-                          <FontAwesomeIcon icon={faKey} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(p)}
-                          disabled={actionLoading === p.id}
-                          title="Remove player"
-                          className="text-red-500 hover:text-red-400 transition-colors disabled:opacity-40"
-                        >
-                          <FontAwesomeIcon icon={faTrash} />
-                        </button>
-                      </div>
-                    </td>
+          <>
+            <div className="space-y-3 md:hidden">
+              {players.map((p) => (
+                <div
+                  key={p.id}
+                  className="rounded-lg border border-tavern-amber/20 bg-tavern-dark/30 p-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-tavern-parchment">
+                        {p.username}
+                      </p>
+                      <p className="text-xs text-tavern-muted mt-1">
+                        Failed attempts: {p.failedAttempts}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-xs flex items-center gap-1 ${p.isLocked ? "text-red-400" : "text-green-400"}`}
+                    >
+                      <FontAwesomeIcon
+                        icon={p.isLocked ? faLock : faLockOpen}
+                      />
+                      {p.isLocked ? "Locked" : "Active"}
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => handleToggleLock(p)}
+                      disabled={actionLoading === p.id}
+                      className="mobile-action-btn text-tavern-amber border border-tavern-amber/30 hover:text-tavern-gold hover:border-tavern-amber disabled:opacity-40"
+                    >
+                      <FontAwesomeIcon
+                        icon={p.isLocked ? faLockOpen : faLock}
+                      />
+                    </button>
+                    <button
+                      onClick={() => handleResetPIN(p)}
+                      disabled={actionLoading === p.id}
+                      className="mobile-action-btn text-tavern-amber border border-tavern-amber/30 hover:text-tavern-gold hover:border-tavern-amber disabled:opacity-40"
+                    >
+                      <FontAwesomeIcon icon={faKey} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p)}
+                      disabled={actionLoading === p.id}
+                      className="mobile-action-btn text-red-500 border border-red-500/30 hover:text-red-400 hover:border-red-400 disabled:opacity-40"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-tavern-amber/20 text-tavern-muted text-left">
+                    <th className="pb-2 pr-4">Username</th>
+                    <th className="pb-2 pr-4">Status</th>
+                    <th className="pb-2 pr-4">Failed Attempts</th>
+                    <th className="pb-2">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {players.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="border-b border-tavern-amber/10 hover:bg-tavern-amber/5"
+                    >
+                      <td className="py-2 pr-4 font-medium text-tavern-parchment">
+                        {p.username}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {p.isLocked ? (
+                          <span className="text-red-400 flex items-center gap-1">
+                            <FontAwesomeIcon icon={faLock} /> Locked
+                          </span>
+                        ) : (
+                          <span className="text-green-400 flex items-center gap-1">
+                            <FontAwesomeIcon icon={faLockOpen} /> Active
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-4 text-tavern-muted">
+                        {p.failedAttempts}
+                      </td>
+                      <td className="py-2">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleToggleLock(p)}
+                            disabled={actionLoading === p.id}
+                            title={p.isLocked ? "Unlock" : "Lock"}
+                            className="text-tavern-amber hover:text-tavern-gold transition-colors disabled:opacity-40"
+                          >
+                            <FontAwesomeIcon
+                              icon={p.isLocked ? faLockOpen : faLock}
+                            />
+                          </button>
+                          <button
+                            onClick={() => handleResetPIN(p)}
+                            disabled={actionLoading === p.id}
+                            title="Reset PIN"
+                            className="text-tavern-amber hover:text-tavern-gold transition-colors disabled:opacity-40"
+                          >
+                            <FontAwesomeIcon icon={faKey} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(p)}
+                            disabled={actionLoading === p.id}
+                            title="Remove player"
+                            className="text-red-500 hover:text-red-400 transition-colors disabled:opacity-40"
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
@@ -374,6 +396,6 @@ export default function AdminPlayers() {
           accessToken={accessToken}
         />
       )}
-    </div>
+    </AdminShell>
   );
 }

@@ -3,7 +3,11 @@ import { useAuth } from "../context/AuthContext.jsx";
 import Login from "../pages/Login.jsx";
 import ChangePIN from "../pages/ChangePIN.jsx";
 import AdminPlayers from "../pages/admin/Players.jsx";
+import AdminSettings from "../pages/admin/Settings.jsx";
+import AdminCampaigns from "../pages/admin/Campaigns.jsx";
+import AdminDashboard from "../pages/admin/Dashboard.jsx";
 import PlayerDashboard from "../pages/player/Dashboard.jsx";
+import PlayerSettings from "../pages/player/Settings.jsx";
 import Forbidden from "../pages/Forbidden.jsx";
 
 function PrivateRoute({ children }) {
@@ -18,6 +22,14 @@ function AdminRoute({ children }) {
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role !== "DM") return <Navigate to="/forbidden" replace />;
+  return children;
+}
+
+function PlayerRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== "PLAYER") return <Navigate to="/forbidden" replace />;
   return children;
 }
 
@@ -61,7 +73,39 @@ export default function AppRouter() {
         path="/admin"
         element={
           <AdminRoute>
+            <Navigate to="/admin/dashboard" replace />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/settings"
+        element={
+          <AdminRoute>
+            <AdminSettings />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/adventurers"
+        element={
+          <AdminRoute>
             <AdminPlayers />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/campaigns"
+        element={
+          <AdminRoute>
+            <AdminCampaigns />
           </AdminRoute>
         }
       />
@@ -71,6 +115,14 @@ export default function AppRouter() {
           <PrivateRoute>
             <PlayerDashboard />
           </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <PlayerRoute>
+            <PlayerSettings />
+          </PlayerRoute>
         }
       />
       <Route path="/forbidden" element={<Forbidden />} />

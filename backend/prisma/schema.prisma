@@ -31,6 +31,19 @@ model User {
   createdPlayers User[] @relation("CreatedPlayers")
 
   refreshTokens  RefreshToken[]
+  campaignsCreated Campaign[] @relation("CampaignCreator")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Campaign {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+
+  createdById Int
+  createdBy   User @relation("CampaignCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,7 +1,9 @@
 # Copilot Instructions — The Soggy Calf
 
 ## Project Overview
+
 "The Soggy Calf" is a DnD campaign management web app.
+
 - Players and a Dungeon Master (DM) log in with a 4-digit PIN
 - The DM creates and manages player accounts via an admin panel
 - Monorepo with npm workspaces: `frontend/` and `backend/`
@@ -10,12 +12,14 @@
 ## Tech Stack
 
 ### Frontend
+
 - React 18, Vite 8, React Router v6
 - **Tailwind CSS v4** via `@tailwindcss/vite` plugin
 - Font Awesome (`@fortawesome/react-fontawesome` + svg-core + free-solid + free-brands)
 - Vitest + React Testing Library for tests
 
 ### Backend
+
 - Node.js + Express 4
 - Prisma 5 + PostgreSQL
 - bcrypt v6 (12 rounds prod, 1 round test), jsonwebtoken, cookie-parser
@@ -23,6 +27,7 @@
 - Jest + Supertest for tests
 
 ## Tailwind CSS v4 Rules
+
 - **Always** use `@import "tailwindcss";` — never the v3 directives (`@tailwind base` etc.)
 - Custom theme colors are defined in `frontend/src/index.css` under `@theme {}` as CSS custom properties:
   ```css
@@ -40,6 +45,7 @@
 - **No** `tailwind.config.js` — **No** `postcss.config.js`
 
 ## Auth Model
+
 - 4-digit numeric PIN stored as bcrypt hash
 - JWT access token: 15 min lifetime, includes `jti` (random nonce via `crypto.randomBytes(8)`)
 - httpOnly refresh cookie: 7 days, refresh token rotation on every use
@@ -51,6 +57,7 @@
 ## Key Architecture Patterns
 
 ### Frontend
+
 - All API calls go through `src/services/api.js` — never use raw `fetch` directly
 - Auth state (user, accessToken) lives in `AuthContext` — access token is **in-memory only**, never localStorage
 - Use the `useAuth()` hook to read auth state in components
@@ -58,24 +65,28 @@
 - Routes use `PrivateRoute` (requires auth) and `AdminRoute` (requires DM role) wrappers
 
 ### Backend
+
 - Single shared `PrismaClient` instance exported from `src/services/authService.js` as `prisma`
 - **Never** instantiate a new `PrismaClient` — always import `{ prisma }` from `authService`
 - Middleware chain: `requireAuth` (JWT verify → attaches `req.user`) then `requireDM` (role check)
 - Centralized error handling via `src/middleware/errorHandler.js`
 
 ## Prisma Schema Key Points
+
 - `User` model: `username` (unique), `pinHash`, `role` (DM/PLAYER enum), `isLocked`, `lockedUntil`, `failedAttempts`, `mustChangePIN`, `createdById` (self-relation to DM who created them)
 - `RefreshToken` model: `token` (unique), `userId` (FK cascade delete), `expiresAt`, `revoked`
 - Run `npx prisma generate` after any schema change
 - Seed script: `backend/prisma/seed.js` — creates DM (`username: 'dm'`, PIN `0000`, `mustChangePIN: true`), idempotent
 
 ## Git Conventions
+
 - Branches: `main` (production) → `develop` (integration) → `feature/short-name`
 - **Never** commit directly to `main` — always PR into `develop` first
 - Conventional Commits: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`
 - PRs always target `develop`
 
 ## What to Avoid
+
 - No TypeScript — keep everything `.js` / `.jsx`
 - No raw `fetch` — use the `api` service wrapper
 - No second `PrismaClient` instantiation
@@ -110,6 +121,7 @@ cd frontend && npm run build  # production Vite build
 ```
 
 ## Docker
+
 - `docker-compose.yml` — dev with hot reload and bind mounts
 - `docker-compose.prod.yml` — production with built images and nginx
 - Backend container runs `npx prisma migrate deploy && npm run dev` on start

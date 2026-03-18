@@ -15,7 +15,7 @@
 ### Prerequisites
 
 - Docker Desktop installed and running
-- Node.js 20+ (for local non-Docker development)
+- Node.js 20+ (for local frontend/backend development)
 
 ### 1. Clone and configure
 
@@ -26,7 +26,28 @@ cp .env.example .env
 # Edit .env — set DB_PASSWORD and JWT_SECRET
 ```
 
-### 2. Start with Docker
+### 2. Start Docker-backed PostgreSQL
+
+```bash
+npm run db:up
+```
+
+PostgreSQL is exposed on `localhost:55432` so it does not conflict with existing PostgreSQL listeners commonly found on `5432` or `5433`.
+
+### 3. Run the app locally
+
+```bash
+cd backend
+npx prisma migrate dev
+npm run seed
+npm run dev
+
+# in a second terminal
+cd frontend
+npm run dev
+```
+
+### 4. Optional: run the full stack in Docker
 
 ```bash
 docker compose up --build
@@ -37,9 +58,9 @@ Services:
 |---------|-----|
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:3001 |
-| PostgreSQL | localhost:5432 |
+| PostgreSQL | localhost:55432 |
 
-### 3. Seed the database (first run)
+### 5. Seed the database (first run, if you use full Docker)
 
 ```bash
 docker compose exec backend npm run seed
@@ -58,6 +79,7 @@ This creates the initial Dungeon Master account:
 ### Backend
 
 ```bash
+npm run db:up
 cd backend
 cp ../.env.example .env
 npm install
@@ -65,6 +87,8 @@ npx prisma migrate dev
 npm run seed
 npm run dev
 ```
+
+The backend expects Docker-backed PostgreSQL at `localhost:55432` during local development.
 
 ### Frontend
 
@@ -132,7 +156,7 @@ See `.env.example` for all required variables.
 | `PORT`               | Backend port (default: 3001)                              |
 | `FRONTEND_URL`       | Frontend origin for CORS (default: http://localhost:5173) |
 | `NODE_ENV`           | `development` or `production`                             |
-| `DB_PASSWORD`        | PostgreSQL password (used in compose files)               |
+| `DB_PASSWORD`        | PostgreSQL password for the Docker dev database           |
 
 ---
 

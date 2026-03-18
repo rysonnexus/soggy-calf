@@ -3,9 +3,16 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Login from "../pages/Login.jsx";
 import { AuthContext } from "../context/AuthContext.jsx";
+import { api } from "../services/api.js";
 
 const mockLogin = vi.fn();
 const mockNavigate = vi.fn();
+
+vi.mock("../services/api.js", () => ({
+  api: {
+    get: vi.fn(),
+  },
+}));
 
 vi.mock("react-router-dom", async (importOriginal) => {
   const actual = await importOriginal();
@@ -34,16 +41,23 @@ describe("Login page", () => {
   beforeEach(() => {
     mockLogin.mockReset();
     mockNavigate.mockReset();
+    api.get.mockResolvedValue({ usernames: ["dm", "player1"] });
   });
 
-  it("renders username input and PIN display", () => {
+  it("renders username selector and PIN display", async () => {
     renderLogin();
+    await waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith("/auth/usernames", {
+        skipAuth: true,
+      }),
+    );
     expect(screen.getByLabelText(/name \/ username/i)).toBeTruthy();
     expect(screen.getByText(/enter the tavern/i)).toBeTruthy();
   });
 
-  it("submit button is disabled without username and full PIN", () => {
+  it("submit button is disabled without username and full PIN", async () => {
     renderLogin();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
     const btn = screen.getByText(/enter the tavern/i);
     expect(btn.closest("button").disabled).toBe(true);
   });
@@ -53,6 +67,7 @@ describe("Login page", () => {
     mockLogin.mockRejectedValueOnce(err);
 
     renderLogin();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
     fireEvent.change(screen.getByLabelText(/name \/ username/i), {
       target: { value: "dm" },
     });
@@ -70,6 +85,7 @@ describe("Login page", () => {
     mockLogin.mockRejectedValueOnce(err);
 
     renderLogin();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
     fireEvent.change(screen.getByLabelText(/name \/ username/i), {
       target: { value: "dm" },
     });
@@ -82,6 +98,7 @@ describe("Login page", () => {
   it("navigates to /admin for DM role", async () => {
     mockLogin.mockResolvedValueOnce({ role: "DM", mustChangePIN: false });
     renderLogin();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
     fireEvent.change(screen.getByLabelText(/name \/ username/i), {
       target: { value: "dm" },
     });
@@ -95,6 +112,7 @@ describe("Login page", () => {
   it("navigates to /dashboard for PLAYER role", async () => {
     mockLogin.mockResolvedValueOnce({ role: "PLAYER", mustChangePIN: false });
     renderLogin();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
     fireEvent.change(screen.getByLabelText(/name \/ username/i), {
       target: { value: "player1" },
     });
@@ -110,6 +128,7 @@ describe("Login page", () => {
   it("navigates to /change-pin when mustChangePIN is true", async () => {
     mockLogin.mockResolvedValueOnce({ role: "DM", mustChangePIN: true });
     renderLogin();
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
     fireEvent.change(screen.getByLabelText(/name \/ username/i), {
       target: { value: "dm" },
     });

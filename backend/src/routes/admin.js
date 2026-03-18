@@ -152,4 +152,49 @@ router.delete("/players/:id", async (req, res, next) => {
   }
 });
 
+// GET /admin/campaigns — list campaigns created by current DM
+router.get("/campaigns", async (req, res, next) => {
+  try {
+    const campaigns = await prisma.$queryRaw`
+      SELECT id, name, description, "createdAt"
+      FROM "Campaign"
+      WHERE "createdById" = ${req.user.id}
+      ORDER BY "createdAt" DESC
+    `;
+    res.json(campaigns);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /admin/campaigns — create a campaign
+router.post("/campaigns", async (req, res, next) => {
+  try {
+    const { name, description } = req.body;
+
+    if (!name || typeof name !== "string" || name.trim().length < 2) {
+      return res
+        .status(400)
+        .json({ message: "Campaign name must be at least 2 characters" });
+    }
+
+    const normalizedDescription =
+      typeof description === "string" && description.trim()
+        ? description.trim()
+        : null;
+
+    const rows = await prisma.$queryRaw`
+      INSERT INTO "Campaign" (name, description, "createdById", "updatedAt")
+      VALUES (${name.trim()}, ${normalizedDescription}, ${req.user.id}, NOW())
+      RETURNING id, name, description, "createdAt"
+    `;
+
+    const campaign = rows[0];
+
+    res.status(201).json(campaign);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;
