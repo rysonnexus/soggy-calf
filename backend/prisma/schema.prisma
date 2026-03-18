@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PLAYER
+  DM
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  username       String    @unique
+  pinHash        String
+  role           Role      @default(PLAYER)
+  isLocked       Boolean   @default(false)
+  lockedUntil    DateTime?
+  failedAttempts Int       @default(0)
+  mustChangePIN  Boolean   @default(true)
+
+  // Self-relation: DM who created this player
+  createdById Int?
+  createdBy   User?  @relation("CreatedPlayers", fields: [createdById], references: [id], onDelete: SetNull)
+  createdPlayers User[] @relation("CreatedPlayers")
+
+  refreshTokens  RefreshToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

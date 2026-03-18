@@ -1,0 +1,53 @@
+name: soggy-calf-prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: soggy_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: soggy_calf
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    # Not exposing port externally in production
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soggy_user -d soggy_calf"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    image: soggy-calf-backend:${IMAGE_TAG:-latest}
+    environment:
+      DATABASE_URL: postgresql://soggy_user:${DB_PASSWORD}@postgres:5432/soggy_calf
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      PORT: 3001
+      NODE_ENV: production
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "npx prisma migrate deploy && npm run start"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    image: soggy-calf-frontend:${IMAGE_TAG:-latest}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_prod_data:
