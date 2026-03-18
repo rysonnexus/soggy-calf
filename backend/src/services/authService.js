@@ -65,12 +65,6 @@ function signAccessToken(payload) {
   );
 }
 
-function signRefreshToken(payload) {
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: REFRESH_TOKEN_TTL,
-  });
-}
-
 async function issueTokens(user) {
   const accessToken = signAccessToken({
     sub: user.id,
