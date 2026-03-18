@@ -1,6 +1,7 @@
 # The Soggy Calf — DnD Campaign App
 
 ## Stack
+
 - **Frontend**: React + Vite + Tailwind CSS + Font Awesome
 - **Backend**: Node.js + Express + Prisma + PostgreSQL
 - **Auth**: 4-digit PIN, bcrypt, JWT (15 min access token) + httpOnly refresh cookie (7 days)
@@ -12,10 +13,12 @@
 ## Quick Start (Development)
 
 ### Prerequisites
+
 - Docker Desktop installed and running
-- Node.js 20+ (for local non-Docker development)
+- Node.js 20+ (for local frontend/backend development)
 
 ### 1. Clone and configure
+
 ```bash
 git clone <repo-url> soggy-calf
 cd soggy-calf
@@ -23,7 +26,29 @@ cp .env.example .env
 # Edit .env — set DB_PASSWORD and JWT_SECRET
 ```
 
-### 2. Start with Docker
+### 2. Start Docker-backed PostgreSQL
+
+```bash
+npm run db:up
+```
+
+PostgreSQL is exposed on `localhost:55432` so it does not conflict with existing PostgreSQL listeners commonly found on `5432` or `5433`.
+
+### 3. Run the app locally
+
+```bash
+cd backend
+npx prisma migrate dev
+npm run seed
+npm run dev
+
+# in a second terminal
+cd frontend
+npm run dev
+```
+
+### 4. Optional: run the full stack in Docker
+
 ```bash
 docker compose up --build
 ```
@@ -33,13 +58,16 @@ Services:
 |---------|-----|
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:3001 |
-| PostgreSQL | localhost:5432 |
+| PostgreSQL | localhost:55432 |
 
-### 3. Seed the database (first run)
+### 5. Seed the database (first run, if you use full Docker)
+
 ```bash
 docker compose exec backend npm run seed
 ```
+
 This creates the initial Dungeon Master account:
+
 - **Username**: `dm`
 - **PIN**: `0000`
 - You will be forced to change the PIN on first login.
@@ -49,7 +77,9 @@ This creates the initial Dungeon Master account:
 ## Local Development (without Docker)
 
 ### Backend
+
 ```bash
+npm run db:up
 cd backend
 cp ../.env.example .env
 npm install
@@ -58,7 +88,10 @@ npm run seed
 npm run dev
 ```
 
+The backend expects Docker-backed PostgreSQL at `localhost:55432` during local development.
+
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -70,6 +103,7 @@ npm run dev
 ## Git Workflow
 
 ### Branch Strategy
+
 ```
 main          ← production-ready, tagged releases only
   └─ develop  ← integration branch, PRs merge here
@@ -79,6 +113,7 @@ main          ← production-ready, tagged releases only
 ```
 
 ### Daily workflow
+
 ```bash
 # Start a new feature
 git checkout develop && git pull
@@ -94,6 +129,7 @@ git push -u origin feature/my-feature
 ```
 
 ### Releasing to production
+
 ```bash
 git checkout develop && git pull
 git checkout -b release/v1.0.0
@@ -112,19 +148,20 @@ git branch -d release/v1.0.0
 
 See `.env.example` for all required variables.
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Secret for signing access tokens (32+ chars) |
-| `JWT_REFRESH_SECRET` | Secret for signing refresh tokens (32+ chars) |
-| `PORT` | Backend port (default: 3001) |
-| `FRONTEND_URL` | Frontend origin for CORS (default: http://localhost:5173) |
-| `NODE_ENV` | `development` or `production` |
-| `DB_PASSWORD` | PostgreSQL password (used in compose files) |
+| Variable             | Description                                               |
+| -------------------- | --------------------------------------------------------- |
+| `DATABASE_URL`       | PostgreSQL connection string                              |
+| `JWT_SECRET`         | Secret for signing access tokens (32+ chars)              |
+| `JWT_REFRESH_SECRET` | Secret for signing refresh tokens (32+ chars)             |
+| `PORT`               | Backend port (default: 3001)                              |
+| `FRONTEND_URL`       | Frontend origin for CORS (default: http://localhost:5173) |
+| `NODE_ENV`           | `development` or `production`                             |
+| `DB_PASSWORD`        | PostgreSQL password for the Docker dev database           |
 
 ---
 
 ## Project Structure
+
 ```
 soggy-calf/
 ├── frontend/                  # React + Vite app
@@ -152,7 +189,8 @@ soggy-calf/
 ---
 
 ## Roles
-| Role | Capabilities |
-|------|-------------|
+
+| Role           | Capabilities                                         |
+| -------------- | ---------------------------------------------------- |
 | **DM (Admin)** | Create/manage players, manage campaigns, full access |
-| **Player** | View own campaigns and character sheet |
+| **Player**     | View own campaigns and character sheet               |
