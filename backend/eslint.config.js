@@ -1,12 +1,12 @@
-const js = require('@eslint/js');
-const globals = require('globals');
+const js = require("@eslint/js");
+const globals = require("globals");
 
 module.exports = [
   {
-    files: ['src/**/*.js', 'prisma/**/*.js'],
+    files: ["src/**/*.js", "prisma/**/*.js"],
     languageOptions: {
       ecmaVersion: 2020,
-      sourceType: 'commonjs',
+      sourceType: "commonjs",
       globals: {
         ...globals.node,
         ...globals.jest,
@@ -14,10 +14,10 @@ module.exports = [
     },
     rules: {
       ...js.configs.recommended.rules,
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      "no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },
   {
-    ignores: ['node_modules/**', 'dist/**'],
+    ignores: ["node_modules/**", "dist/**"],
   },
 ];
