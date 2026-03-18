@@ -1,6 +1,7 @@
 # The Soggy Calf — DnD Campaign App
 
 ## Stack
+
 - **Frontend**: React + Vite + Tailwind CSS + Font Awesome
 - **Backend**: Node.js + Express + Prisma + PostgreSQL
 - **Auth**: 4-digit PIN, bcrypt, JWT (15 min access token) + httpOnly refresh cookie (7 days)
@@ -12,10 +13,12 @@
 ## Quick Start (Development)
 
 ### Prerequisites
+
 - Docker Desktop installed and running
 - Node.js 20+ (for local non-Docker development)
 
 ### 1. Clone and configure
+
 ```bash
 git clone <repo-url> soggy-calf
 cd soggy-calf
@@ -24,6 +27,7 @@ cp .env.example .env
 ```
 
 ### 2. Start with Docker
+
 ```bash
 docker compose up --build
 ```
@@ -36,10 +40,13 @@ Services:
 | PostgreSQL | localhost:5432 |
 
 ### 3. Seed the database (first run)
+
 ```bash
 docker compose exec backend npm run seed
 ```
+
 This creates the initial Dungeon Master account:
+
 - **Username**: `dm`
 - **PIN**: `0000`
 - You will be forced to change the PIN on first login.
@@ -49,6 +56,7 @@ This creates the initial Dungeon Master account:
 ## Local Development (without Docker)
 
 ### Backend
+
 ```bash
 cd backend
 cp ../.env.example .env
@@ -59,6 +67,7 @@ npm run dev
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -70,6 +79,7 @@ npm run dev
 ## Git Workflow
 
 ### Branch Strategy
+
 ```
 main          ← production-ready, tagged releases only
   └─ develop  ← integration branch, PRs merge here
@@ -79,6 +89,7 @@ main          ← production-ready, tagged releases only
 ```
 
 ### Daily workflow
+
 ```bash
 # Start a new feature
 git checkout develop && git pull
@@ -94,6 +105,7 @@ git push -u origin feature/my-feature
 ```
 
 ### Releasing to production
+
 ```bash
 git checkout develop && git pull
 git checkout -b release/v1.0.0
@@ -112,19 +124,20 @@ git branch -d release/v1.0.0
 
 See `.env.example` for all required variables.
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Secret for signing access tokens (32+ chars) |
-| `JWT_REFRESH_SECRET` | Secret for signing refresh tokens (32+ chars) |
-| `PORT` | Backend port (default: 3001) |
-| `FRONTEND_URL` | Frontend origin for CORS (default: http://localhost:5173) |
-| `NODE_ENV` | `development` or `production` |
-| `DB_PASSWORD` | PostgreSQL password (used in compose files) |
+| Variable             | Description                                               |
+| -------------------- | --------------------------------------------------------- |
+| `DATABASE_URL`       | PostgreSQL connection string                              |
+| `JWT_SECRET`         | Secret for signing access tokens (32+ chars)              |
+| `JWT_REFRESH_SECRET` | Secret for signing refresh tokens (32+ chars)             |
+| `PORT`               | Backend port (default: 3001)                              |
+| `FRONTEND_URL`       | Frontend origin for CORS (default: http://localhost:5173) |
+| `NODE_ENV`           | `development` or `production`                             |
+| `DB_PASSWORD`        | PostgreSQL password (used in compose files)               |
 
 ---
 
 ## Project Structure
+
 ```
 soggy-calf/
 ├── frontend/                  # React + Vite app
@@ -152,7 +165,8 @@ soggy-calf/
 ---
 
 ## Roles
-| Role | Capabilities |
-|------|-------------|
+
+| Role           | Capabilities                                         |
+| -------------- | ---------------------------------------------------- |
 | **DM (Admin)** | Create/manage players, manage campaigns, full access |
-| **Player** | View own campaigns and character sheet |
+| **Player**     | View own campaigns and character sheet               |

@@ -1,7 +1,9 @@
 ## Summary
+
 <!-- What does this PR do? One or two sentences. -->
 
 ## Type of change
+
 - [ ] `feat` — new feature
 - [ ] `fix` — bug fix
 - [ ] `refactor` — code restructure, no functional change
@@ -9,6 +11,7 @@
 - [ ] `docs` — documentation only
 
 ## Checklist
+
 - [ ] Targets `develop` branch (not `main`)
 - [ ] Tests added or updated for new behaviour
 - [ ] No `console.log` left in production code
@@ -17,7 +20,9 @@
 - [ ] Manually verified in Docker dev environment
 
 ## Testing done
+
 <!-- Describe how you tested this change -->
 
 ## Screenshots (if UI change)
+
 <!-- Optional -->
